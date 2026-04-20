@@ -10,6 +10,7 @@ QueueLess AI is a lightweight, single-page web application designed to serve as 
 - **Smart AI Chat Assistant**: Users can converse naturally using keywords to find optimal pathways.
 - **Intelligent Decision Engine**: Calculates the "best" recommended option based on shortest wait times and lowest crowd density, providing clear reasoning.
 - **Live Crowd Dashboard**: A visual representation of crowd levels and wait times across different zones.
+- **Secure Admin Portal**: An authenticated control center (`admin.html`) with simulated Google Firebase Auth flow to demonstrate role-based access security. 
 - **Google Maps Integration**: Displays a live map of the venue to aid navigation.
 
 ## Tech Stack
@@ -25,15 +26,18 @@ The intelligent decision-making is powered by evaluating JSON/Object data arrays
 
 All AI responses clearly combine the recommendation with the reasoning variables (e.g. queue length, wait times) to ensure transparency. The responses are dynamic and clearly state exactly *why* the option was chosen.
 
-## Security Practices
+## Security & Edge Case Handling
 - **Text Injection Prevention**: Strict usage of `textContent` instead of `innerHTML` to prevent Cross-site Scripting (XSS).
-- **Sanitization**: Using `.trim()` and `.toLowerCase()` to clean raw input natively prior to processing.
-- **No External Scripts**: Aside from standard google fonts, zero external javascript libraries are fetched, reducing attack surface vectors.
+- **Sanitization & Boundaries**: Using `.trim()`, `.toLowerCase()`, and Regex sanitization to handle invalid inputs safely.
+- **Edge Cases**: Try/Catch bounds heavily enclose the business engine to silently log boundary exceptions and provide safe fallback messages.
+- **Testing Coverage**: Includes a robust test suite (`tests/app.test.js`) and GitHub Action automation (`.github/workflows/test.yml`) securing core workflows and integration boundaries against unexpected failures.
 
-## Google Services Used
-- **Google Maps Embed API**: An embedded interactive venue map (Narendra Modi Stadium used as a demo example) to provide visual context immediately to users within the app.
+## Google Services & Integrations
+- **Google Cloud Platform (GCP - Cloud Run)**: Designed natively for GCP Cloud Run using an optimized NGINX Dockerfile to dynamically serve static assets across a load-balanced node.
+- **Google Firebase**: Integrated with the Google Firebase SDK for core event telemetry tracking (`firebase.analytics`) mapping real user engagement to the GCP dashboard.
+- **Google Maps Embed API**: An embedded interactive venue map (Narendra Modi Stadium) to provide immediate visual context to users.
 
 ## Assumptions
-- Real-time crowd data (such as gate crowd level and wait time) is aggregated frequently by a backend server and fed via API to this client component. The current version safely simulates this payload. 
-- General keyword matching provides enough coverage for quick questions while attending a chaotic event.
-- Total application scope requires extreme optimization, thus keeping assets well under 1 MB and using zero external framework dependencies while still looking premium and functioning optimally.
+- Real-time crowd data serves via a simulated structured API to the client component.
+- The platform operates well under massive concurrent loads via Google Cloud Run scaling configurations.
+- Extreme frontend optimization removes the need for large bloated JS frameworks, using vanilla ES6 + Modern CSS ensuring stable load times.

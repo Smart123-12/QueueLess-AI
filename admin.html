@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QueueLess AI - Admin Portal</title>
+    <meta name="description" content="Secure admin portal for QueueLess AI event management.">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏟️</text></svg>">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Google Services Integration: Firebase Mock -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"></noscript>
+    
+    <style>
+        .admin-container {
+            max-width: 500px;
+            margin: 4rem auto;
+            text-align: center;
+        }
+        .login-box {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .login-box input {
+            width: 100%;
+        }
+        .error-msg {
+            color: var(--status-high-border);
+            font-size: 0.9rem;
+            display: none;
+            margin-top: 1rem;
+        }
+        #dashboard-panel {
+            display: none;
+        }
+        .stat-card {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+        .header-actions {
+            position: absolute;
+            right: 2rem;
+            top: 2rem;
+        }
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 0.5rem 1rem;
+            box-shadow: none;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-actions">
+            <a href="index.html" style="color: #94a3b8; text-decoration: none;">&larr; Back to Public</a>
+        </div>
+        <div class="logo">
+            <h1>Admin Portal</h1>
+            <p>QueueLess AI Control Center</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <!-- Login Section -->
+        <section class="admin-container" id="login-section">
+            <h2>Secure Login</h2>
+            <form class="login-box" id="login-form">
+                <div>
+                    <input type="text" id="admin-user" placeholder="Username (admin)" required aria-label="Username">
+                </div>
+                <div>
+                    <input type="password" id="admin-pass" placeholder="Password (password123)" required aria-label="Password">
+                </div>
+                <button type="submit" aria-label="Login Button">Login to Dashboard</button>
+                <div class="error-msg" id="login-error">Invalid credentials. Please try again.</div>
+            </form>
+        </section>
+
+        <!-- Admin Dashboard Section (Hidden by Default) -->
+        <section id="dashboard-panel">
+            <h2>Live System Dashboard</h2>
+            <p style="color: var(--text-light); margin-bottom: 1.5rem;">Welcome back, Admin. System is running optimally.</p>
+            
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <h3 style="color: #cbd5e1;">Active Users</h3>
+                    <p class="wait-time" style="font-size: 2rem;">1,245</p>
+                </div>
+                <div class="stat-card">
+                    <h3 style="color: #cbd5e1;">API Requests Today</h3>
+                    <p class="wait-time" style="font-size: 2rem;">48,310</p>
+                </div>
+                <div class="stat-card">
+                    <h3 style="color: #cbd5e1;">Server Load</h3>
+                    <p class="wait-time" style="font-size: 2rem; color: #5eead4;">12%</p>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; text-align: right;">
+                <button id="logout-btn" class="btn-secondary">Secure Logout</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="admin.js"></script>
+</body>
+</html>

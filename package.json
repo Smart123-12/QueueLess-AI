@@ -1,0 +1,16 @@
+{
+  "name": "queueless-ai",
+  "version": "1.0.0",
+  "description": "Smart event assistant using Google Cloud and Firebase",
+  "main": "app.js",
+  "scripts": {
+    "test": "node tests/app.test.js",
+    "start": "serve . -p 8080"
+  },
+  "dependencies": {
+    "firebase": "^10.8.0"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}

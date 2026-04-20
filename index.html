@@ -5,20 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QueueLess AI - Smart Event Assistant</title>
     <meta name="description" content="QueueLess AI is a smart assistant for improving the physical event experience at large stadiums by recommending least crowded gates, washrooms, and food stalls.">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏟️</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏟️</text></svg>">
     <link rel="stylesheet" href="style.css">
+    
+    <!-- Google Services Integration: Firebase & GCP -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap"></noscript>
+    <script src="app.js" defer></script>
 </head>
 <body>
-    <header>
+    <header style="position: relative; z-index: 20;">
+        <a href="admin.html" aria-label="Admin Portal" style="position: absolute; right: 1.5rem; top: 1.5rem; color: #94a3b8; font-size: 0.85rem; text-decoration: none; border: 1px solid #334155; padding: 0.3rem 0.6rem; border-radius: 6px; background: rgba(15, 23, 42, 0.5); transition: all 0.2s;">
+            🔒 Admin
+        </a>
         <div class="logo">
             <h1>QueueLess AI</h1>
             <p>Your Smart Stadium Assistant</p>
         </div>
     </header>
 
-    <main class="container">
+    <!-- Customer Login Overlay -->
+    <section id="customer-login-section" style="max-width: 400px; margin: 4rem auto; text-align: center; background: rgba(30,41,59,0.8); padding: 2rem; border-radius: 12px; border: 1px solid #334155;">
+        <h2>Attendee Login</h2>
+        <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.9rem;">Please login with your ticket credentials.</p>
+        <form id="customer-login-form" style="display: flex; flex-direction: column; gap: 1rem;">
+            <input type="text" id="cust-user" placeholder="Ticket ID (student)" required aria-label="Ticket ID">
+            <input type="password" id="cust-pass" placeholder="Password (password)" required aria-label="Password">
+            <button type="submit">Access Assistant</button>
+            <div id="cust-error" style="color: #ef4444; font-size: 0.85rem; display: none;">Invalid Ticket ID. Try 'student' / 'password'</div>
+        </form>
+    </section>
+
+    <!-- Main Container (Hidden until Login) -->
+    <main class="container" id="main-app-content" style="display: none;">
         <!-- Assistant Section -->
         <section class="assistant-section">
             <h2>Chat Assistant</h2>
