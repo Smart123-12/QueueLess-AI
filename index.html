@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="QueueLess AI – Smart stadium assistant to avoid crowds, reduce waiting time, and navigate efficiently inside large venues." />
+  <meta name="keywords" content="stadium assistant, crowd management, QueueLess AI, smart navigation, event assistant" />
+  <title>QueueLess AI – Smart Stadium Assistant</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <header class="header" id="header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="13" stroke="url(#grad1)" stroke-width="2"/>
+            <path d="M8 14 L12 10 L16 14 L20 10" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 18 L12 14 L16 18 L20 14" stroke="url(#grad2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#6366f1"/>
+                <stop offset="100%" style="stop-color:#8b5cf6"/>
+              </linearGradient>
+              <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#06b6d4"/>
+                <stop offset="100%" style="stop-color:#6366f1"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="logo-text">QueueLess <span class="logo-ai">AI</span></span>
+      </div>
+
+      <nav class="nav" id="nav">
+        <a href="#assistant" class="nav-link" onclick="smoothScroll('assistant')">Assistant</a>
+        <a href="#dashboard" class="nav-link" onclick="smoothScroll('dashboard')">Dashboard</a>
+        <a href="#map" class="nav-link" onclick="smoothScroll('map')">Map</a>
+      </nav>
+
+      <div class="header-badge">
+        <span class="pulse-dot"></span>
+        <span>Live</span>
+      </div>
+
+      <!-- Hamburger for mobile -->
+      <button class="hamburger" id="hamburger" aria-label="Toggle menu" onclick="toggleMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========== HERO ========== -->
+  <section class="hero" id="hero">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        AI-Powered Stadium Experience
+      </div>
+      <h1 class="hero-title">
+        Skip the Queue,<br/>
+        <span class="hero-gradient-text">Enjoy the Game</span>
+      </h1>
+      <p class="hero-subtitle">
+        QueueLess AI uses real-time crowd intelligence to guide you to the fastest gates, shortest food queues, and nearest facilities — so you never miss a moment.
+      </p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="smoothScroll('assistant')" id="hero-cta">
+          <span>Ask the Assistant</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+        <button class="btn-ghost" onclick="smoothScroll('dashboard')" id="hero-dashboard">View Dashboard</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">3</span>
+          <span class="stat-label">Gate Status</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">5</span>
+          <span class="stat-label">Food Stalls</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-num">4</span>
+          <span class="stat-label">Washrooms</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="phone-mockup">
+        <div class="phone-screen">
+          <div class="phone-chat">
+            <div class="phone-msg bot">Which gate should I enter? 🏟️</div>
+            <div class="phone-msg user">Gate 2 — lowest crowd right now!</div>
+            <div class="phone-msg bot">Best food option? 🍔</div>
+            <div class="phone-msg user">Stall B — only 2 min wait!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CHAT ASSISTANT ========== -->
+  <section class="section" id="assistant">
+    <div class="section-header">
+      <div class="section-tag">AI Assistant</div>
+      <h2 class="section-title">Your Smart Stadium Companion</h2>
+      <p class="section-sub">Ask anything about gates, food, or facilities. Get instant AI-powered recommendations.</p>
+    </div>
+
+    <div class="chat-container">
+      <!-- Suggestion Chips -->
+      <div class="suggestions" id="suggestions">
+        <span class="suggestions-label">Quick asks:</span>
+        <button class="chip" onclick="sendSuggestion(this)" data-msg="Which gate is least crowded?" id="chip-gate">🚪 Least crowded gate?</button>
+        <button class="chip" onclick="sendSuggestion(this)" data-msg="Where should I go for food?" id="chip-food">🍔 Best food stall?</button>
+        <button class="chip" onclick="sendSuggestion(this)" data-msg="Nearest washroom?" id="chip-wash">🚻 Nearest washroom?</button>
+        <button class="chip" onclick="sendSuggestion(this)" data-msg="What is the wait time at all gates?" id="chip-wait">⏱️ All wait times?</button>
+        <button class="chip" onclick="sendSuggestion(this)" data-msg="Show me the crowd dashboard summary" id="chip-summary">📊 Crowd summary?</button>
+      </div>
+
+      <!-- Chat Window -->
+      <div class="chat-window" id="chat-window" role="log" aria-live="polite" aria-label="Chat messages">
+        <!-- Messages will be injected by JS -->
+      </div>
+
+      <!-- Input Area -->
+      <div class="chat-input-area">
+        <div class="chat-input-wrapper">
+          <input
+            type="text"
+            id="chat-input"
+            class="chat-input"
+            placeholder="Ask me anything about the stadium..."
+            autocomplete="off"
+            aria-label="Chat input"
+            onkeydown="handleInputKey(event)"
+          />
+          <button class="send-btn" id="send-btn" onclick="handleSend()" aria-label="Send message">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/>
+            </svg>
+          </button>
+        </div>
+        <p class="chat-hint">Powered by QueueLess AI decision engine • Updates every 30s</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CROWD DASHBOARD ========== -->
+  <section class="section section-dark" id="dashboard">
+    <div class="section-header">
+      <div class="section-tag">Live Dashboard</div>
+      <h2 class="section-title">Real-Time Crowd Intelligence</h2>
+      <p class="section-sub">Simulated live data updates every 30 seconds to reflect changing stadium conditions.</p>
+      <div class="last-updated" id="last-updated">Last updated: just now</div>
+    </div>
+
+    <div class="dashboard-grid">
+
+      <!-- GATES CARD -->
+      <div class="dash-card" id="card-gates">
+        <div class="dash-card-header">
+          <div class="dash-card-icon">🚪</div>
+          <div>
+            <h3 class="dash-card-title">Entry Gates</h3>
+            <p class="dash-card-sub">Choose the fastest entry</p>
+          </div>
+        </div>
+        <div class="dash-items" id="gates-list">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+
+      <!-- FOOD CARD -->
+      <div class="dash-card" id="card-food">
+        <div class="dash-card-header">
+          <div class="dash-card-icon">🍔</div>
+          <div>
+            <h3 class="dash-card-title">Food Stalls</h3>
+            <p class="dash-card-sub">Shortest wait time wins</p>
+          </div>
+        </div>
+        <div class="dash-items" id="food-list">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+
+      <!-- WASHROOMS CARD -->
+      <div class="dash-card" id="card-washrooms">
+        <div class="dash-card-header">
+          <div class="dash-card-icon">🚻</div>
+          <div>
+            <h3 class="dash-card-title">Washrooms</h3>
+            <p class="dash-card-sub">Nearest available facility</p>
+          </div>
+        </div>
+        <div class="dash-items" id="washroom-list">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+
+      <!-- SUMMARY CARD -->
+      <div class="dash-card dash-card-wide" id="card-summary">
+        <div class="dash-card-header">
+          <div class="dash-card-icon">📊</div>
+          <div>
+            <h3 class="dash-card-title">Stadium Overview</h3>
+            <p class="dash-card-sub">Current best options at a glance</p>
+          </div>
+        </div>
+        <div class="summary-grid" id="summary-grid">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== MAP ========== -->
+  <section class="section" id="map">
+    <div class="section-header">
+      <div class="section-tag">Live Venue Map</div>
+      <h2 class="section-title">Locate Your Venue</h2>
+      <p class="section-sub">Explore the stadium layout and surrounding area using Google Maps integration.</p>
+    </div>
+
+    <div class="map-wrapper">
+      <div class="map-overlay-badge">
+        <span class="pulse-dot pulse-dot-green"></span>
+        Narendra Modi Stadium, Ahmedabad
+      </div>
+      <iframe
+        id="stadium-map"
+        title="Narendra Modi Stadium, Ahmedabad — Google Maps"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3671.6565756428854!2d72.59420987461516!3d23.091571314393706!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395e832d7b2477f7%3A0x1504ca073d3efb6b!2sNarendra%20Modi%20Stadium!5e0!3m2!1sen!2sin!4v1713000000000!5m2!1sen!2sin"
+        allowfullscreen=""
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade"
+        aria-label="Google Maps showing Narendra Modi Stadium"
+      ></iframe>
+    </div>
+
+    <div class="map-info-cards">
+      <div class="map-info-card" id="map-info-entrance">
+        <div class="map-info-icon">🏟️</div>
+        <div>
+          <div class="map-info-title">Narendra Modi Stadium</div>
+          <div class="map-info-sub">Motera, Ahmedabad, Gujarat</div>
+        </div>
+      </div>
+      <div class="map-info-card" id="map-info-capacity">
+        <div class="map-info-icon">👥</div>
+        <div>
+          <div class="map-info-title">Capacity: 132,000</div>
+          <div class="map-info-sub">World's Largest Cricket Stadium</div>
+        </div>
+      </div>
+      <div class="map-info-card" id="map-info-gates">
+        <div class="map-info-icon">🚪</div>
+        <div>
+          <div class="map-info-title">Multiple Entry Gates</div>
+          <div class="map-info-sub">Optimal gate suggested by AI</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="footer" id="footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <span class="logo-text">QueueLess <span class="logo-ai">AI</span></span>
+        <p class="footer-tagline">Skip the queue. Enjoy the game.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#assistant" onclick="smoothScroll('assistant')" class="footer-link">Assistant</a>
+        <a href="#dashboard" onclick="smoothScroll('dashboard')" class="footer-link">Dashboard</a>
+        <a href="#map" onclick="smoothScroll('map')" class="footer-link">Map</a>
+      </div>
+      <div class="footer-stack">
+        <span class="stack-badge">HTML5</span>
+        <span class="stack-badge">CSS3</span>
+        <span class="stack-badge">Vanilla JS</span>
+        <span class="stack-badge">Google Maps</span>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 QueueLess AI · Built with ❤️ for smarter stadium experiences · Powered by Google Cloud Run</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
