@@ -44,22 +44,9 @@ const stadiumData = {
 };
 
 // DOM Elements
-const chatWindow = document.getElementById('chat-window');
-const inputField = document.getElementById('user-input');
-const sendBtn = document.getElementById('send-btn');
-const crowdDashboard = document.getElementById('crowd-dashboard');
-
-// Auth DOM
-const custLoginForm = document.getElementById('customer-login-form');
-const custLoginSection = document.getElementById('customer-login-section');
-const custLogoutBtn = document.getElementById('customer-logout-btn');
-
-// View Toggles
-const viewLogin = document.getElementById('view-login');
-const viewRegister = document.getElementById('view-register');
-const authTitle = document.getElementById('auth-title');
-const authSubtitle = document.getElementById('auth-subtitle');
-const authBtn = document.getElementById('auth-btn');
+let chatWindow, inputField, sendBtn, crowdDashboard;
+let custLoginForm, custLoginSection, custLogoutBtn, custError, sosBtn;
+let viewLogin, viewRegister, authTitle, authSubtitle, authBtn;
 
 let isRegisterMode = false;
 // Session Expiry configuration (e.g., 30 minutes)
@@ -76,12 +63,29 @@ if (!localStorage.getItem('mock_users')) {
  * Initialize the application
  */
 function init() {
+    // 1. Fetch DOM elements
+    chatWindow = document.getElementById('chat-window');
+    inputField = document.getElementById('user-input');
+    sendBtn = document.getElementById('send-btn');
+    crowdDashboard = document.getElementById('crowd-dashboard');
+    custLoginForm = document.getElementById('customer-login-form');
+    custLoginSection = document.getElementById('customer-login-section');
+    custLogoutBtn = document.getElementById('customer-logout-btn');
+    custError = document.getElementById('cust-error');
+    sosBtn = document.getElementById('sos-btn');
+    viewLogin = document.getElementById('view-login');
+    viewRegister = document.getElementById('view-register');
+    authTitle = document.getElementById('auth-title');
+    authSubtitle = document.getElementById('auth-subtitle');
+    authBtn = document.getElementById('auth-btn');
+
+    // 2. Setup systems
     setupAuth();
     renderDashboard();
     
-    // Event Listeners for chat
-    sendBtn.addEventListener('click', handleUserQuery);
-    inputField.addEventListener('keypress', (e) => {
+    // 3. Event Listeners for chat
+    if (sendBtn) sendBtn.addEventListener('click', handleUserQuery);
+    if (inputField) inputField.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleUserQuery();
     });
 }
@@ -165,12 +169,18 @@ function setupAuth() {
             } else {
                 // Login Flow
                 const users = JSON.parse(localStorage.getItem('mock_users') || '{}');
-                if (users[user] === pass) {
-                    showToast("Login successful.");
-                    createSession();
+                if (users[user]) {
+                    if (users[user] === pass) {
+                        showToast("Login successful.");
+                        createSession();
+                    } else {
+                        custError.textContent = "Incorrect password.";
+                        custError.style.display = 'block';
+                    }
                 } else {
-                    custError.textContent = "Invalid Ticket ID or Password.";
+                    custError.textContent = "Account does not exist! Please click 'Create Account' above.";
                     custError.style.display = 'block';
+                    showToast("Account not found.", true);
                 }
             }
         });
