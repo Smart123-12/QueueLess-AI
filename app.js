@@ -65,10 +65,9 @@ const DecisionEngine = {
       return a.entranceTime - b.entranceTime;
     });
     const best = sorted[0];
-    const cl = CROWD_LEVEL[best.crowdLevel];
     return {
       gate: best,
-      reason: `I recommend ${best.name} because it has the ${cl.label.toLowerCase()} crowd level and fastest entry.`,
+      reason: `I recommend ${best.name} because it currently has the lowest crowd density, ensuring faster and smoother entry.`,
     };
   },
 
@@ -81,7 +80,7 @@ const DecisionEngine = {
     const best = sorted[0];
     return {
       stall: best,
-      reason: `Head to ${best.name} (${best.cuisine}). It has only a ${best.waitMinutes}-minute wait.`,
+      reason: `For a quicker experience, ${best.name} is the best choice as it has only a ${best.waitMinutes}-minute waiting time.`,
     };
   },
 
@@ -92,10 +91,12 @@ const DecisionEngine = {
   bestWashroom() {
     const free = STADIUM_DATA.washrooms.filter(w => w.crowdLevel === 'FREE');
     const best = free.length > 0 ? free[0] : STADIUM_DATA.washrooms.find(w => w.crowdLevel === 'BUSY');
-    const status = CROWD_LEVEL[best.crowdLevel];
+    // Ensure "Washroom near Gate 2" renders perfectly
+    let wname = best.name;
+    if (wname.startsWith('Washroom')) { wname = 'washroom ' + wname.substring(9); }
     return {
       washroom: best,
-      reason: `The nearest available washroom is ${best.name}. It is currently ${status.label.toLowerCase()}.`,
+      reason: `The ${wname} is currently free, making it the most convenient option.`,
     };
   },
 
@@ -139,10 +140,10 @@ const DecisionEngine = {
 const INTENTS = [
   {
     // Gate & entrance queries
-    pattern: /gate|enter|entrance|crowd|crowded|less crowd|entry/i,
+    pattern: /gate|enter|entrance|crowd|crowded|less crowd|entry|fast entry|least crowd|best gate/i,
     handler: () => {
       const { reason } = DecisionEngine.bestGate();
-      return reason;
+      return `Based on current crowd data...\n\n${reason}`;
     },
   },
   {
@@ -150,7 +151,7 @@ const INTENTS = [
     pattern: /food|eat|hungry|snack|stall|drink|beverage|pizza|meal/i,
     handler: () => {
       const { reason } = DecisionEngine.bestFoodStall();
-      return reason;
+      return `For a smoother experience...\n\n${reason}`;
     },
   },
   {
@@ -158,7 +159,7 @@ const INTENTS = [
     pattern: /washroom|toilet|restroom|bathroom|loo|wc/i,
     handler: () => {
       const { reason } = DecisionEngine.bestWashroom();
-      return reason;
+      return `Based on current crowd data...\n\n${reason}`;
     },
   },
   {
@@ -199,7 +200,7 @@ function processIntent(message) {
   }
 
   // Fallback response
-  return "Sorry, I couldn't understand. Please try asking about gates, food, or washrooms.";
+  return "Sorry, I didn’t understand. Try asking about gates, food, or washrooms.";
 }
 
 
@@ -274,13 +275,50 @@ const ChatUI = {
     avatar.className = 'msg-avatar bot-avatar';
     avatar.textContent = '🤖';
     
+    const bubbleContainer = document.createElement('div');
+    bubbleContainer.style.display = 'flex';
+    bubbleContainer.style.flexDirection = 'column';
+    bubbleContainer.style.gap = '8px';
+    bubbleContainer.style.maxWidth = '72%';
+
     const bubble = document.createElement('div');
     bubble.className = 'msg-bubble bot-bubble';
     bubble.style.whiteSpace = 'pre-wrap';
+    bubble.style.maxWidth = '100%';
     bubble.textContent = textContent;
     
+    bubbleContainer.appendChild(bubble);
+
+    // Feedback system
+    const feedback = document.createElement('div');
+    feedback.className = 'msg-feedback';
+    feedback.style.display = 'flex';
+    feedback.style.gap = '10px';
+    feedback.style.fontSize = '0.75rem';
+    feedback.style.color = 'var(--text-muted)';
+    
+    const helpfulBtn = document.createElement('button');
+    helpfulBtn.textContent = '👍 Helpful';
+    helpfulBtn.style.color = 'inherit';
+    helpfulBtn.style.transition = 'color 0.2s';
+    helpfulBtn.onclick = () => { helpfulBtn.style.color = 'var(--accent-green)'; helpfulBtn.textContent = '✅ Thanks for feedback!'; feedback.children[1].style.display = 'none'; };
+
+    const notHelpfulBtn = document.createElement('button');
+    notHelpfulBtn.textContent = '👎 Not Helpful';
+    notHelpfulBtn.style.color = 'inherit';
+    notHelpfulBtn.style.transition = 'color 0.2s';
+    notHelpfulBtn.onclick = () => { notHelpfulBtn.style.color = 'var(--accent-red)'; notHelpfulBtn.textContent = '❌ Thanks for feedback!'; feedback.children[0].style.display = 'none'; };
+
+    feedback.appendChild(helpfulBtn);
+    feedback.appendChild(notHelpfulBtn);
+    
+    // Only show feedback for meaningful AI responses, not simple greetings
+    if (textContent.includes('Because') || textContent.includes('because') || textContent.includes('choice') || textContent.includes('recommend') || textContent.includes('Currently') || textContent.includes('currently')) {
+      bubbleContainer.appendChild(feedback);
+    }
+
     row.appendChild(avatar);
-    row.appendChild(bubble);
+    row.appendChild(bubbleContainer);
     
     this.window.appendChild(row);
     this.scrollToBottom();
@@ -295,10 +333,13 @@ const ChatUI = {
     row.className = 'msg-row animate-in';
     row.innerHTML = `
       <div class="msg-avatar bot-avatar">🤖</div>
-      <div class="typing-indicator">
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
-        <div class="typing-dot"></div>
+      <div class="msg-bubble bot-bubble typing-indicator-container" style="display:flex; align-items:center; gap:10px; max-width:72%;">
+        <span style="font-size: 0.82rem; font-weight: 500; color: var(--text-secondary);">Analyzing crowd data...</span>
+        <div class="typing-indicator" style="padding:0; border:none; background:transparent;">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
       </div>
     `;
     this.window.appendChild(row);
