@@ -46,6 +46,7 @@ const stadiumData = {
 // DOM Elements
 let chatWindow, inputField, sendBtn, crowdDashboard;
 let custLoginForm, custLoginSection, custLogoutBtn, custError, sosBtn;
+let mainAppContent;
 
 // Setup mock DB defaults
 if (!localStorage.getItem('mock_users')) {
@@ -59,6 +60,7 @@ if (!localStorage.getItem('mock_users')) {
  */
 function init() {
     // 1. Fetch DOM elements
+    mainAppContent = document.getElementById('main-app-content');
     chatWindow = document.getElementById('chat-window');
     inputField = document.getElementById('user-input');
     sendBtn = document.getElementById('send-btn');
