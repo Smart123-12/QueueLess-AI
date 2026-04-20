@@ -32,19 +32,29 @@
     </header>
 
     <!-- Customer Login Overlay -->
-    <section id="customer-login-section" style="max-width: 400px; margin: 4rem auto; text-align: center; background: rgba(30,41,59,0.8); padding: 2rem; border-radius: 12px; border: 1px solid #334155;">
-        <h2>Attendee Login</h2>
-        <p style="color: #94a3b8; margin-bottom: 1.5rem; font-size: 0.9rem;">Please login with your ticket credentials.</p>
-        <form id="customer-login-form" style="display: flex; flex-direction: column; gap: 1rem;">
-            <input type="text" id="cust-user" placeholder="Ticket ID (student)" required aria-label="Ticket ID">
-            <input type="password" id="cust-pass" placeholder="Password (password)" required aria-label="Password">
-            <button type="submit">Access Assistant</button>
-            <div id="cust-error" style="color: #ef4444; font-size: 0.85rem; display: none;">Invalid Ticket ID. Try 'student' / 'password'</div>
-        </form>
-    </section>
+    <div id="customer-login-section" class="setup-overlay">
+        <section class="login-card premium-glass">
+            <div class="login-header">
+                <h2>Welcome Attendee<span class="pulse-dot"></span></h2>
+                <p>Unlock the QueueLess AI Assistant.</p>
+            </div>
+            <form id="customer-login-form" class="login-form">
+                <div class="input-group">
+                    <span class="icon">🎟️</span>
+                    <input type="text" id="cust-user" placeholder="Ticket ID (student)" required aria-label="Ticket ID">
+                </div>
+                <div class="input-group">
+                    <span class="icon">🔑</span>
+                    <input type="password" id="cust-pass" placeholder="Password (password)" required aria-label="Password">
+                </div>
+                <button type="submit" class="glow-btn">Access Assistant</button>
+                <div id="cust-error" class="error-text" style="display: none;">Invalid Ticket. Try 'student' / 'password'</div>
+            </form>
+        </section>
+    </div>
 
     <!-- Main Container (Hidden until Login) -->
-    <main class="container" id="main-app-content" style="display: none;">
+    <main class="container fade-in" id="main-app-content" style="display: none;">
         <!-- Assistant Section -->
         <section class="assistant-section">
             <h2>Chat Assistant</h2>
