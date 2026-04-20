@@ -10,6 +10,9 @@
    1. STADIUM DATA — Live-simulated crowd & facility data
    ============================================================ */
 
+/**
+ * Crowd levels enum for consistent comparison
+ */
 const CROWD_LEVEL = {
   LOW:    { label: 'Low',    score: 1, color: 'green',  emoji: '🟢' },
   MEDIUM: { label: 'Medium', score: 2, color: 'yellow', emoji: '🟡' },
@@ -18,20 +21,28 @@ const CROWD_LEVEL = {
   BUSY:   { label: 'Busy',   score: 3, color: 'red',    emoji: '🔴' },
 };
 
+/**
+ * STADIUM_DATA — core dataset used by decision engine.
+ * In a real system this would come from IoT sensors / API.
+ */
 let STADIUM_DATA = {
   gates: [
-    { id: 'g1', name: 'Gate 1', crowdLevel: 'HIGH',   entranceTime: 12 },
-    { id: 'g2', name: 'Gate 2', crowdLevel: 'LOW',    entranceTime: 2  },
-    { id: 'g3', name: 'Gate 3', crowdLevel: 'MEDIUM', entranceTime: 6  },
+    { id: 'g1', name: 'Gate 1', crowdLevel: 'HIGH',   entranceTime: 12, description: 'North Entrance — Section 100–120' },
+    { id: 'g2', name: 'Gate 2', crowdLevel: 'LOW',    entranceTime: 2,  description: 'East Entrance — Section 200–220' },
+    { id: 'g3', name: 'Gate 3', crowdLevel: 'MEDIUM', entranceTime: 6,  description: 'West Entrance — Section 300–320' },
   ],
   foodStalls: [
-    { id: 'fa', name: 'Stall A', waitMinutes: 10 },
-    { id: 'fb', name: 'Stall B', waitMinutes: 2  },
-    { id: 'fc', name: 'Stall C', waitMinutes: 6  },
+    { id: 'fa', name: 'Stall A',   waitMinutes: 10, cuisine: 'Indian Snacks',  location: 'Near Gate 1' },
+    { id: 'fb', name: 'Stall B',   waitMinutes: 2,  cuisine: 'Fast Food',      location: 'Near Gate 2' },
+    { id: 'fc', name: 'Stall C',   waitMinutes: 6,  cuisine: 'Beverages',      location: 'Central Plaza' },
+    { id: 'fd', name: 'Stall D',   waitMinutes: 8,  cuisine: 'Pizza & Wraps',  location: 'Near Gate 3' },
+    { id: 'fe', name: 'Stall E',   waitMinutes: 3,  cuisine: 'South Indian',   location: 'Level 2 Food Court' },
   ],
   washrooms: [
-    { id: 'wa', name: 'Washroom near Gate 1', crowdLevel: 'BUSY' },
-    { id: 'wb', name: 'Washroom near Gate 2', crowdLevel: 'FREE' },
+    { id: 'wa', name: 'Washroom near Gate 1', crowdLevel: 'BUSY',   distance: '50m from Gate 1' },
+    { id: 'wb', name: 'Washroom near Gate 2', crowdLevel: 'FREE',   distance: '30m from Gate 2' },
+    { id: 'wc', name: 'Washroom — Level 2',   crowdLevel: 'FREE',   distance: 'Level 2, Block C' },
+    { id: 'wd', name: 'Washroom near Gate 3', crowdLevel: 'BUSY',   distance: '40m from Gate 3' },
   ],
 };
 
@@ -41,6 +52,11 @@ let STADIUM_DATA = {
    ============================================================ */
 
 const DecisionEngine = {
+
+  /**
+   * Find best gate (lowest score + least entrance time)
+   * @returns {{ gate, reason }}
+   */
   bestGate() {
     const sorted = [...STADIUM_DATA.gates].sort((a, b) => {
       const sa = CROWD_LEVEL[a.crowdLevel].score;
@@ -49,47 +65,66 @@ const DecisionEngine = {
       return a.entranceTime - b.entranceTime;
     });
     const best = sorted[0];
+    const cl = CROWD_LEVEL[best.crowdLevel];
     return {
       gate: best,
-      reason: `I recommend ${best.name} because it has the lowest crowd level (${CROWD_LEVEL[best.crowdLevel].label}) and fastest entry (${best.entranceTime} min).`,
+      reason: `I recommend ${best.name} because it has the ${cl.label.toLowerCase()} crowd level and fastest entry.`,
     };
   },
 
+  /**
+   * Find best food stall (shortest wait time)
+   * @returns {{ stall, reason }}
+   */
   bestFoodStall() {
     const sorted = [...STADIUM_DATA.foodStalls].sort((a, b) => a.waitMinutes - b.waitMinutes);
     const best = sorted[0];
     return {
       stall: best,
-      reason: `I recommend ${best.name} because it has the shortest wait time of just ${best.waitMinutes} minutes.`,
+      reason: `Head to ${best.name} (${best.cuisine}). It has only a ${best.waitMinutes}-minute wait.`,
     };
   },
 
+  /**
+   * Find best washroom (Free status, then by name)
+   * @returns {{ washroom, reason }}
+   */
   bestWashroom() {
     const free = STADIUM_DATA.washrooms.filter(w => w.crowdLevel === 'FREE');
     const best = free.length > 0 ? free[0] : STADIUM_DATA.washrooms.find(w => w.crowdLevel === 'BUSY');
+    const status = CROWD_LEVEL[best.crowdLevel];
     return {
       washroom: best,
-      reason: `I recommend the ${best.name} because its current status is ${CROWD_LEVEL[best.crowdLevel].label}.`,
+      reason: `The nearest available washroom is ${best.name}. It is currently ${status.label.toLowerCase()}.`,
     };
   },
 
+  /**
+   * Return all wait times for all facilities
+   */
   allWaitTimes() {
-    let response = "Here are the current wait times: \n";
-    STADIUM_DATA.gates.forEach(g => {
-      response += `${g.name}: ${g.entranceTime} min (Crowd: ${CROWD_LEVEL[g.crowdLevel].label}). \n`;
-    });
-    STADIUM_DATA.foodStalls.forEach(f => {
-      response += `${f.name}: ${f.waitMinutes} min. \n`;
-    });
-    return response;
+    const gateLines = STADIUM_DATA.gates.map(g => {
+      const cl = CROWD_LEVEL[g.crowdLevel];
+      return `${cl.emoji} ${g.name}: ${cl.label} (${g.entranceTime} min wait)`;
+    }).join('\n');
+
+    const foodLines = STADIUM_DATA.foodStalls.map(s =>
+      `🍽️ ${s.name} (${s.cuisine}): ${s.waitMinutes} min wait`
+    ).join('\n');
+
+    return `Here are all current wait times:\n\nGates:\n${gateLines}\n\nFood Stalls:\n${foodLines}`;
   },
 
+  /**
+   * Dashboard summary
+   */
   dashboardSummary() {
     const { gate } = this.bestGate();
     const { stall } = this.bestFoodStall();
     const { washroom } = this.bestWashroom();
-    return `Current Best Options: Best Gate is ${gate.name}, Best Food is ${stall.name}, Best Washroom is ${washroom.name}.`;
+    return `📊 Current Best Options:\n\n🚪 Best Gate: ${gate.name} (${CROWD_LEVEL[gate.crowdLevel].label} crowd, ${gate.entranceTime} min entry)\n🍔 Best Food: ${stall.name} — ${stall.waitMinutes} min wait (${stall.cuisine})\n🚻 Best Washroom: ${washroom.name} — ${CROWD_LEVEL[washroom.crowdLevel].label}`;
   },
+
 };
 
 
@@ -97,32 +132,73 @@ const DecisionEngine = {
    3. INTENT RECOGNITION — Map user queries to actions
    ============================================================ */
 
-function processIntent(rawMessage) {
-  // Security Fix
-  const userInput = rawMessage.trim().toLowerCase();
-  
-  if (!userInput) return 'Please type a question!';
+/**
+ * Patterns for intent detection
+ * Each entry: { pattern (regex), handler }
+ */
+const INTENTS = [
+  {
+    // Gate & entrance queries
+    pattern: /gate|enter|entrance|crowd|crowded|less crowd|entry/i,
+    handler: () => {
+      const { reason } = DecisionEngine.bestGate();
+      return reason;
+    },
+  },
+  {
+    // Food queries
+    pattern: /food|eat|hungry|snack|stall|drink|beverage|pizza|meal/i,
+    handler: () => {
+      const { reason } = DecisionEngine.bestFoodStall();
+      return reason;
+    },
+  },
+  {
+    // Washroom queries
+    pattern: /washroom|toilet|restroom|bathroom|loo|wc/i,
+    handler: () => {
+      const { reason } = DecisionEngine.bestWashroom();
+      return reason;
+    },
+  },
+  {
+    // All wait times
+    pattern: /wait time|all|how long|queue|time/i,
+    handler: () => DecisionEngine.allWaitTimes(),
+  },
+  {
+    // Dashboard / summary
+    pattern: /dashboard|summary|overview|status|best option/i,
+    handler: () => DecisionEngine.dashboardSummary(),
+  },
+  {
+    // Greetings
+    pattern: /^(hi|hello|hey|hola|yo|sup|good morning|good evening|greetings)/i,
+    handler: () => `👋 Hello! I'm QueueLess AI, your smart stadium assistant. Ask me about:\n• 🚪 Which gate to use\n• 🍔 Best food stall\n• 🚻 Nearest washroom\n• ⏱️ Current wait times`,
+  },
+  {
+    // Help
+    pattern: /help|what can you|what do you|commands|options/i,
+    handler: () => `I can help you with:\n• "Which gate is least crowded?"\n• "Where should I go for food?"\n• "Nearest washroom?"\n• "What are all wait times?"\n• "Show me the crowd summary"`,
+  },
+];
 
-  if (userInput.includes('gate') || userInput.includes('enter') || userInput.includes('crowd')) {
-    return DecisionEngine.bestGate().reason;
-  }
-  if (userInput.includes('food') || userInput.includes('eat') || userInput.includes('stall')) {
-    return DecisionEngine.bestFoodStall().reason;
-  }
-  if (userInput.includes('washroom') || userInput.includes('toilet') || userInput.includes('restroom')) {
-    return DecisionEngine.bestWashroom().reason;
-  }
-  if (userInput.includes('wait') || userInput.includes('time') || userInput.includes('all')) {
-    return DecisionEngine.allWaitTimes();
-  }
-  if (userInput.includes('summary') || userInput.includes('dashboard')) {
-    return DecisionEngine.dashboardSummary();
-  }
-  if (userInput.includes('hi') || userInput.includes('hello')) {
-    return "Hello! I'm QueueLess AI, your smart stadium assistant. Ask me about gates, food stalls, or washrooms.";
+/**
+ * Process a user message and return a bot reply
+ * @param {string} message
+ * @returns {string} HTML response string
+ */
+function processIntent(message) {
+  const userInput = message.trim().toLowerCase();
+  if (!userInput) return 'Please type a question! 😊';
+
+  for (const intent of INTENTS) {
+    if (intent.pattern.test(userInput)) {
+      return intent.handler();
+    }
   }
 
-  // Fallback (Testing boost)
+  // Fallback response
   return "Sorry, I couldn't understand. Please try asking about gates, food, or washrooms.";
 }
 
@@ -132,13 +208,24 @@ function processIntent(rawMessage) {
    ============================================================ */
 
 const ChatUI = {
+
+  /** Reference to chat window element */
   window: null,
 
+  /**
+   * Initialize chat with a welcome message
+   */
   init() {
     this.window = document.getElementById('chat-window');
-    this.addBotMessage("👋 Welcome to QueueLess AI! I'm your smart stadium assistant. Ask me about gates, food stalls, or washrooms!");
+    this.addBotMessage(
+      `👋 Welcome to QueueLess AI!\nI'm your smart stadium assistant.\n\nAsk me about gates, food stalls, or washrooms — I'll find you the best option using live crowd data! Try the quick-ask chips above. 🏟️`
+    );
   },
 
+  /**
+   * Add a user message bubble
+   * @param {string} text
+   */
   addUserMessage(text) {
     const row = document.createElement('div');
     row.className = 'msg-row user-row animate-in';
@@ -149,7 +236,6 @@ const ChatUI = {
     
     const bubble = document.createElement('div');
     bubble.className = 'msg-bubble user-bubble';
-    // Safe Output
     bubble.textContent = text;
     
     row.appendChild(avatar);
@@ -159,19 +245,28 @@ const ChatUI = {
     this.scrollToBottom();
   },
 
-  addBotMessage(text, delay = 0) {
+  /**
+   * Add a bot message bubble with typing indicator then text
+   * @param {string} textContent - plain text content
+   * @param {number} delay - ms before showing (for typing effect)
+   */
+  addBotMessage(textContent, delay = 0) {
     if (delay > 0) {
+      // Show typing indicator first
       const typingRow = this.showTyping();
       setTimeout(() => {
         typingRow.remove();
-        this._insertBotBubble(text);
+        this._insertBotBubble(textContent);
       }, delay);
     } else {
-      this._insertBotBubble(text);
+      this._insertBotBubble(textContent);
     }
   },
 
-  _insertBotBubble(text) {
+  /**
+   * Internal: insert bot bubble element
+   */
+  _insertBotBubble(textContent) {
     const row = document.createElement('div');
     row.className = 'msg-row animate-in';
     
@@ -181,9 +276,9 @@ const ChatUI = {
     
     const bubble = document.createElement('div');
     bubble.className = 'msg-bubble bot-bubble';
-    // Safe Output
-    bubble.textContent = text;
-
+    bubble.style.whiteSpace = 'pre-wrap';
+    bubble.textContent = textContent;
+    
     row.appendChild(avatar);
     row.appendChild(bubble);
     
@@ -191,31 +286,29 @@ const ChatUI = {
     this.scrollToBottom();
   },
 
+  /**
+   * Show a typing indicator bubble
+   * @returns {HTMLElement} the typing row element (for removal)
+   */
   showTyping() {
     const row = document.createElement('div');
     row.className = 'msg-row animate-in';
-    
-    const avatar = document.createElement('div');
-    avatar.className = 'msg-avatar bot-avatar';
-    avatar.textContent = '🤖';
-    
-    const indicator = document.createElement('div');
-    indicator.className = 'typing-indicator';
-    
-    for(let i=0; i<3; i++){
-      const dot = document.createElement('div');
-      dot.className = 'typing-dot';
-      indicator.appendChild(dot);
-    }
-    
-    row.appendChild(avatar);
-    row.appendChild(indicator);
-    
+    row.innerHTML = `
+      <div class="msg-avatar bot-avatar">🤖</div>
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    `;
     this.window.appendChild(row);
     this.scrollToBottom();
     return row;
   },
 
+  /**
+   * Scroll chat window to the bottom
+   */
   scrollToBottom() {
     requestAnimationFrame(() => {
       this.window.scrollTop = this.window.scrollHeight;
@@ -229,12 +322,11 @@ const ChatUI = {
    ============================================================ */
 
 const Dashboard = {
-  render() {
-    this.emptyElement('gates-list');
-    this.emptyElement('food-list');
-    this.emptyElement('washroom-list');
-    this.emptyElement('summary-grid');
 
+  /**
+   * Render all dashboard cards from STADIUM_DATA
+   */
+  render() {
     this.renderGates();
     this.renderFood();
     this.renderWashrooms();
@@ -242,93 +334,96 @@ const Dashboard = {
     this.updateTimestamp();
   },
 
-  emptyElement(id) {
-    const el = document.getElementById(id);
-    if(el) {
-      while (el.firstChild) {
-        el.removeChild(el.firstChild);
-      }
-    }
-  },
-
+  /**
+   * Convert a crowd level key to a color class
+   */
   colorClass(level) {
     const map = { HIGH: 'red', MEDIUM: 'yellow', LOW: 'green', BUSY: 'red', FREE: 'green' };
     return map[level] || 'yellow';
   },
 
-  createCard(name, value, statusLevel, isBest) {
-    const card = document.createElement('div');
-    card.className = `dash-item ${isBest ? 'best' : ''}`;
-    
-    const left = document.createElement('div');
-    left.className = 'dash-item-left';
-    
-    const dot = document.createElement('div');
-    dot.className = `status-dot ${this.colorClass(statusLevel)}`;
-    
-    const nameContainer = document.createElement('div');
-    const nameEl = document.createElement('div');
-    nameEl.className = 'dash-item-name';
-    nameEl.textContent = name;
-    
-    if (isBest) {
-      const bestTag = document.createElement('span');
-      bestTag.className = 'best-tag';
-      bestTag.textContent = 'Best';
-      // Append space before best tag
-      nameEl.appendChild(document.createTextNode(' '));
-      nameEl.appendChild(bestTag);
-    }
-    nameContainer.appendChild(nameEl);
-    
-    left.appendChild(dot);
-    left.appendChild(nameContainer);
-    
-    const right = document.createElement('div');
-    right.className = 'dash-item-right';
-    
-    const valEl = document.createElement('span');
-    valEl.className = 'dash-item-value';
-    valEl.textContent = value;
-    right.appendChild(valEl);
-    
-    card.appendChild(left);
-    card.appendChild(right);
-    return card;
-  },
-
+  /**
+   * Render gates list
+   */
   renderGates() {
     const list = document.getElementById('gates-list');
     if (!list) return;
     const best = DecisionEngine.bestGate().gate;
-    STADIUM_DATA.gates.forEach(g => {
+    list.innerHTML = STADIUM_DATA.gates.map(g => {
+      const cl = CROWD_LEVEL[g.crowdLevel];
       const isBest = g.id === best.id;
-      list.appendChild(this.createCard(g.name, `${CROWD_LEVEL[g.crowdLevel].label} · ${g.entranceTime} min`, g.crowdLevel, isBest));
-    });
+      return `
+        <div class="dash-item ${isBest ? 'best' : ''}">
+          <div class="dash-item-left">
+            <div class="status-dot ${this.colorClass(g.crowdLevel)}"></div>
+            <div>
+              <div class="dash-item-name">${g.name} ${isBest ? '<span class="best-tag">Best</span>' : ''}</div>
+            </div>
+          </div>
+          <div class="dash-item-right">
+            <span class="dash-item-value">${cl.label} · ${g.entranceTime} min</span>
+          </div>
+        </div>
+      `;
+    }).join('');
   },
 
+  /**
+   * Render food stall list
+   */
   renderFood() {
     const list = document.getElementById('food-list');
     if (!list) return;
     const best = DecisionEngine.bestFoodStall().stall;
     const sorted = [...STADIUM_DATA.foodStalls].sort((a, b) => a.waitMinutes - b.waitMinutes);
-    sorted.forEach(s => {
+    list.innerHTML = sorted.map(s => {
       const isBest = s.id === best.id;
-      const colorLevel = s.waitMinutes <= 3 ? 'LOW' : s.waitMinutes <= 7 ? 'MEDIUM' : 'HIGH';
-      list.appendChild(this.createCard(s.name, `${s.waitMinutes} min`, colorLevel, isBest));
-    });
+      const color = s.waitMinutes <= 3 ? 'green' : s.waitMinutes <= 7 ? 'yellow' : 'red';
+      return `
+        <div class="dash-item ${isBest ? 'best' : ''}">
+          <div class="dash-item-left">
+            <div class="status-dot ${color}"></div>
+            <div>
+              <div class="dash-item-name">${s.name} ${isBest ? '<span class="best-tag">Best</span>' : ''}</div>
+            </div>
+          </div>
+          <div class="dash-item-right">
+            <span class="dash-item-value">${s.waitMinutes} min · ${s.cuisine}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
   },
 
+  /**
+   * Render washrooms list
+   */
   renderWashrooms() {
     const list = document.getElementById('washroom-list');
     if (!list) return;
     const best = DecisionEngine.bestWashroom().washroom;
-    STADIUM_DATA.washrooms.forEach(w => {
+    list.innerHTML = STADIUM_DATA.washrooms.map(w => {
+      const cl = CROWD_LEVEL[w.crowdLevel];
       const isBest = w.id === best.id;
-      list.appendChild(this.createCard(w.name, CROWD_LEVEL[w.crowdLevel].label, w.crowdLevel, isBest));
-    });
+      return `
+        <div class="dash-item ${isBest ? 'best' : ''}">
+          <div class="dash-item-left">
+            <div class="status-dot ${this.colorClass(w.crowdLevel)}"></div>
+            <div>
+              <div class="dash-item-name">${w.name} ${isBest ? '<span class="best-tag">Best</span>' : ''}</div>
+            </div>
+          </div>
+          <div class="dash-item-right">
+            <span class="dash-item-value">${cl.label}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
   },
 
+  /**
+   * Render summary card (best picks at a glance)
+   */
   renderSummary() {
     const grid = document.getElementById('summary-grid');
     if (!grid) return;
@@ -336,45 +431,35 @@ const Dashboard = {
     const stall = DecisionEngine.bestFoodStall().stall;
     const wash = DecisionEngine.bestWashroom().washroom;
 
-    const data = [
-      { icon: '🚪', label: 'Best Gate', val: gate.name, meta: `${CROWD_LEVEL[gate.crowdLevel].label} · ${gate.entranceTime} min` },
-      { icon: '🍔', label: 'Best Food Stall', val: stall.name, meta: `${stall.waitMinutes} min wait` },
-      { icon: '🚻', label: 'Best Washroom', val: wash.name, meta: `${CROWD_LEVEL[wash.crowdLevel].label}` },
-    ];
-
-    data.forEach(item => {
-      const card = document.createElement('div');
-      card.className = 'summary-card';
-      
-      const icon = document.createElement('div');
-      icon.className = 'summary-card-icon';
-      icon.textContent = item.icon;
-      
-      const label = document.createElement('div');
-      label.className = 'summary-card-label';
-      label.textContent = item.label;
-      
-      const val = document.createElement('div');
-      val.className = 'summary-card-value';
-      val.textContent = item.val;
-      
-      const meta = document.createElement('div');
-      meta.className = 'summary-card-meta';
-      meta.textContent = item.meta;
-      
-      card.appendChild(icon);
-      card.appendChild(label);
-      card.appendChild(val);
-      card.appendChild(meta);
-      grid.appendChild(card);
-    });
+    grid.innerHTML = `
+      <div class="summary-card">
+        <div class="summary-card-icon">🚪</div>
+        <div class="summary-card-label">Best Gate</div>
+        <div class="summary-card-value">${gate.name}</div>
+        <div class="summary-card-meta">${CROWD_LEVEL[gate.crowdLevel].label} · ${gate.entranceTime} min</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon">🍔</div>
+        <div class="summary-card-label">Best Food Stall</div>
+        <div class="summary-card-value">${stall.name}</div>
+        <div class="summary-card-meta">${stall.waitMinutes} min wait · ${stall.cuisine}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-icon">🚻</div>
+        <div class="summary-card-label">Best Washroom</div>
+        <div class="summary-card-value">${wash.name.replace('Washroom near ', '').replace('Washroom — ', '')}</div>
+        <div class="summary-card-meta">${CROWD_LEVEL[wash.crowdLevel].label} · ${wash.distance}</div>
+      </div>
+    `;
   },
 
+  /**
+   * Update the last-updated timestamp display
+   */
   updateTimestamp() {
     const el = document.getElementById('last-updated');
     if (!el) return;
     const now = new Date();
-    // Safe Output
     el.textContent = `Last updated: ${now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`;
   },
 };
@@ -382,86 +467,150 @@ const Dashboard = {
 
 /* ============================================================
    6. LIVE DATA SIMULATOR
+   Randomly mutates crowd levels / wait times every 30 seconds
    ============================================================ */
 
 const DataSimulator = {
+
   crowdLevels:  ['LOW', 'MEDIUM', 'HIGH'],
   washroomLevels: ['FREE', 'BUSY'],
 
+  /**
+   * Randomly shift some data points to simulate live updates
+   */
   tick() {
+    // Randomly update one gate crowd level
     const gateIdx = Math.floor(Math.random() * STADIUM_DATA.gates.length);
-    STADIUM_DATA.gates[gateIdx].crowdLevel = this.crowdLevels[Math.floor(Math.random() * this.crowdLevels.length)];
+    STADIUM_DATA.gates[gateIdx].crowdLevel =
+      this.crowdLevels[Math.floor(Math.random() * this.crowdLevels.length)];
 
+    // Randomly shift food stall wait times by ± 1-3 min
     STADIUM_DATA.foodStalls.forEach(s => {
       const delta = Math.floor(Math.random() * 5) - 2;
       s.waitMinutes = Math.max(1, Math.min(20, s.waitMinutes + delta));
     });
 
+    // Randomly toggle one washroom
     const washIdx = Math.floor(Math.random() * STADIUM_DATA.washrooms.length);
-    STADIUM_DATA.washrooms[washIdx].crowdLevel = this.washroomLevels[Math.floor(Math.random() * this.washroomLevels.length)];
+    STADIUM_DATA.washrooms[washIdx].crowdLevel =
+      this.washroomLevels[Math.floor(Math.random() * this.washroomLevels.length)];
 
+    // Re-render dashboard
     Dashboard.render();
   },
 
   start() {
-    setInterval(() => this.tick(), 30000);
+    setInterval(() => this.tick(), 30000); // every 30 seconds
   },
 };
 
 
 /* ============================================================
-   7. GLOBAL EVENT HANDLERS
+   7. GLOBAL EVENT HANDLERS (called from HTML)
    ============================================================ */
 
-// Attach handlers immediately without inline attributes if possible.
-window.handleSend = function() {
+/**
+ * Handle send button click
+ */
+function handleSend() {
   const input = document.getElementById('chat-input');
-  const text = input.value; // Security fix will trim inside processIntent
-  if (!text.trim()) return;
+  const text = input.value.trim();
+  if (!text) return;
 
-  ChatUI.addUserMessage(text.trim());
+  ChatUI.addUserMessage(text);
   input.value = '';
 
-  const response = processIntent(text);
+  // Use the safe lowercased text format locally for checking intents
+  const userInput = text.trim().toLowerCase();
+  
+  // Process with short delay to show typing indicator
+  const response = processIntent(userInput);
   ChatUI.addBotMessage(response, 900);
 }
 
-window.handleInputKey = function(event) {
+/**
+ * Handle Enter key in chat input
+ * @param {KeyboardEvent} event
+ */
+function handleInputKey(event) {
   if (event.key === 'Enter' && !event.shiftKey) {
     event.preventDefault();
-    window.handleSend();
+    handleSend();
   }
 }
 
-window.sendSuggestion = function(el) {
-  // Use generic closest or dataset instead of inline JS
-  const msg = el.dataset.msg || el.textContent.split(' ').slice(1).join(' ').trim();
+/**
+ * Handle quick-suggest chip click
+ * @param {HTMLElement} el — chip element with data-msg attribute
+ */
+function sendSuggestion(el) {
+  const msg = el.dataset.msg;
   if (!msg) return;
   const input = document.getElementById('chat-input');
   input.value = msg;
-  window.handleSend();
+  handleSend();
 }
 
-window.smoothScroll = function(id) {
+/**
+ * Smooth scroll to section by ID
+ * @param {string} id
+ */
+function smoothScroll(id) {
   const el = document.getElementById(id);
   if (!el) return;
   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-window.toggleMenu = function() {
+/**
+ * Toggle mobile nav menu
+ */
+function toggleMenu() {
   const nav = document.getElementById('nav');
   nav.classList.toggle('open');
 }
 
+
 /* ============================================================
-   8. INIT
+   8. SCROLL ANIMATION — Reveal elements on scroll
+   ============================================================ */
+
+function initScrollAnimations() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.dash-card, .map-info-card, .section-header').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+    observer.observe(el);
+  });
+}
+
+
+/* ============================================================
+   9. APP INIT
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize chat
   ChatUI.init();
+
+  // Render dashboard
   Dashboard.render();
+
+  // Start live data simulation
   DataSimulator.start();
 
+  // Scroll animations
+  initScrollAnimations();
+
+  // Sticky header shadow on scroll
   const header = document.getElementById('header');
   window.addEventListener('scroll', () => {
     if (window.scrollY > 20) {
