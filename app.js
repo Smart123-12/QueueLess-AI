@@ -63,7 +63,7 @@ const authBtn = document.getElementById('auth-btn');
 
 let isRegisterMode = false;
 // Session Expiry configuration (e.g., 30 minutes)
-const SESSION_DURATION_MS = 30 * 60 * 1000;
+// Removed per final request - session is now unlimited
 
 // Setup mock DB defaults
 if (!localStorage.getItem('mock_users')) {
@@ -87,10 +87,48 @@ function init() {
 }
 
 /**
+ * Custom modern Toast Notification
+ */
+function showToast(message, isError = false) {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.position = 'fixed';
+    toast.style.top = '20px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.background = isError ? '#ef4444' : '#10b981';
+    toast.style.color = '#fff';
+    toast.style.padding = '12px 24px';
+    toast.style.borderRadius = '8px';
+    toast.style.boxShadow = '0 10px 25px rgba(0,0,0,0.3)';
+    toast.style.zIndex = '9999';
+    toast.style.fontWeight = 'bold';
+    toast.style.opacity = '0';
+    toast.style.transition = 'opacity 0.3s ease, margin-top 0.3s ease';
+    toast.style.marginTop = '-10px';
+    document.body.appendChild(toast);
+
+    // trigger animation
+    setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.marginTop = '0';
+    }, 10);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.marginTop = '-10px';
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+/**
  * Handle Auth Login & Register for Customer Role
  */
 function setupAuth() {
-    checkSessionExpiry();
+    // Read session (no expiry check)
+    if (sessionStorage.getItem('customer_auth') === 'true') {
+        showMainApp();
+    }
 
     if (viewLogin && viewRegister) {
         viewLogin.addEventListener('click', (e) => { e.preventDefault(); setAuthMode(false); });
@@ -120,13 +158,14 @@ function setupAuth() {
                 }
                 users[user] = pass;
                 localStorage.setItem('mock_users', JSON.stringify(users));
-                alert("Account created! Logging you in...");
-                createSession(user);
+                showToast("Account successfully created! Welcome aboard.");
+                createSession();
             } else {
                 // Login Flow
                 const users = JSON.parse(localStorage.getItem('mock_users') || '{}');
                 if (users[user] === pass) {
-                    createSession(user);
+                    showToast("Login successful.");
+                    createSession();
                 } else {
                     custError.textContent = "Invalid Ticket ID or Password.";
                     custError.style.display = 'block';
@@ -139,14 +178,13 @@ function setupAuth() {
         custLogoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             sessionStorage.removeItem('customer_auth');
-            sessionStorage.removeItem('customer_expiry');
             location.reload();
         });
     }
 
     if (sosBtn) {
         sosBtn.addEventListener('click', () => {
-            alert("🚨 EMERGENCY SOS ACTIVATED! Location pinged. Security has been dispatched directly to your seat.");
+            showToast("🚨 EMERGENCY SOS ACTIVATED! Security dispatched.", true);
             if (typeof firebase !== 'undefined' && firebase.analytics) {
                 firebase.analytics().logEvent('sos_alert', { location: 'main_stadium' });
             }
@@ -172,26 +210,9 @@ function setAuthMode(isRegister) {
     }
 }
 
-function createSession(user) {
+function createSession() {
     sessionStorage.setItem('customer_auth', 'true');
-    sessionStorage.setItem('customer_expiry', Date.now() + SESSION_DURATION_MS);
     showMainApp();
-}
-
-function checkSessionExpiry() {
-    const authList = sessionStorage.getItem('customer_auth');
-    const expiry = sessionStorage.getItem('customer_expiry');
-    if (authList === 'true' && expiry) {
-        if (Date.now() > parseInt(expiry, 10)) {
-            // Session expired
-            sessionStorage.removeItem('customer_auth');
-            sessionStorage.removeItem('customer_expiry');
-            alert("Your session has expired. Please log in again.");
-            location.reload();
-        } else {
-            showMainApp();
-        }
-    }
 }
 
 function showMainApp() {
