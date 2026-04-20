@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Expected Secure Credentials (In production, never store passwords in frontend)
     const REQUIRED_USER = "admin";
-    const REQUIRED_PASS = "password123";
+    const REQUIRED_PASS = "Admin@Secure2026!";
 
     if (loginForm) {
         loginForm.addEventListener('submit', (e) => {
