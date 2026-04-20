@@ -7,11 +7,15 @@ Large stadiums and physical events often suffer from severe bottlenecks at entry
 QueueLess AI is a lightweight, single-page web application designed to serve as a smart assistant for stadium attendees. It acts as a real-time decision engine that guides users to the least crowded gates, fastest food stalls, and freest washrooms, minimizing wait times and improving crowd flow.
 
 ## Features
-- **Smart AI Chat Assistant**: Users can converse naturally using keywords to find optimal pathways.
-- **Intelligent Decision Engine**: Calculates the "best" recommended option based on shortest wait times and lowest crowd density, providing clear reasoning.
-- **Live Crowd Dashboard**: A visual representation of crowd levels and wait times across different zones.
-- **Secure Admin Portal**: An authenticated control center (`admin.html`) with simulated Google Firebase Auth flow to demonstrate role-based access security. 
-- **Google Maps Integration**: Displays a live map of the venue to aid navigation.
+💡 **QUEUELESS AI** helps attendees make smarter decisions in real time:
+✅ Find the least crowded gates for faster entry
+✅ Choose food stalls with shortest wait times
+✅ Locate nearest available washrooms instantly
+✅ View live crowd status (🟢 Low | 🟡 Medium | 🔴 High)
+✅ Navigate easily with Live Venue Map (Google Maps)
+
+- **Secure Setup**: Simple portal access for Demo Users & Admins with robust validations.
+- **Smart AI Chat Assistant**: Ask questions using natural keywords to find optimal pathways.
 
 ## Tech Stack
 - **HTML5**: Semantic web structure.

@@ -46,11 +46,6 @@ const stadiumData = {
 // DOM Elements
 let chatWindow, inputField, sendBtn, crowdDashboard;
 let custLoginForm, custLoginSection, custLogoutBtn, custError, sosBtn;
-let viewLogin, viewRegister, authTitle, authSubtitle, authBtn;
-
-let isRegisterMode = false;
-// Session Expiry configuration (e.g., 30 minutes)
-// Removed per final request - session is now unlimited
 
 // Setup mock DB defaults
 if (!localStorage.getItem('mock_users')) {
@@ -73,11 +68,6 @@ function init() {
     custLogoutBtn = document.getElementById('customer-logout-btn');
     custError = document.getElementById('cust-error');
     sosBtn = document.getElementById('sos-btn');
-    viewLogin = document.getElementById('view-login');
-    viewRegister = document.getElementById('view-register');
-    authTitle = document.getElementById('auth-title');
-    authSubtitle = document.getElementById('auth-subtitle');
-    authBtn = document.getElementById('auth-btn');
 
     // 2. Setup systems
     setupAuth();
@@ -126,17 +116,12 @@ function showToast(message, isError = false) {
 }
 
 /**
- * Handle Auth Login & Register for Customer Role
+ * Handle Auth Login for Customer Role
  */
 function setupAuth() {
-    // Read session (no expiry check)
+    // Read session
     if (sessionStorage.getItem('customer_auth') === 'true') {
         showMainApp();
-    }
-
-    if (viewLogin && viewRegister) {
-        viewLogin.addEventListener('click', (e) => { e.preventDefault(); setAuthMode(false); });
-        viewRegister.addEventListener('click', (e) => { e.preventDefault(); setAuthMode(true); });
     }
 
     if (custLoginForm) {
@@ -146,42 +131,20 @@ function setupAuth() {
             const pass = document.getElementById('cust-pass').value.trim();
             custError.style.display = 'none';
 
-            if (isRegisterMode) {
-                // Register Flow
-                const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
-                if (!passRegex.test(pass)) {
-                    custError.textContent = "Password must be at least 6 chars and include 1 Uppercase, 1 Lowercase, and 1 Number.";
-                    custError.style.display = 'block';
-                    showToast("Weak Password. Try e.g. Secure123", true);
-                    return;
-                }
-                const users = JSON.parse(localStorage.getItem('mock_users') || '{}');
-                if (users[user]) {
-                    custError.textContent = "Account already exists! Click 'Sign In'.";
-                    custError.style.display = 'block';
-                    showToast("Account already exists!", true);
-                    return;
-                }
-                users[user] = pass;
-                localStorage.setItem('mock_users', JSON.stringify(users));
-                showToast("Account successfully created! Welcome aboard.");
-                setTimeout(() => { createSession(); }, 1000);
-            } else {
-                // Login Flow
-                const users = JSON.parse(localStorage.getItem('mock_users') || '{}');
-                if (users[user]) {
-                    if (users[user] === pass) {
-                        showToast("Login successful.");
-                        createSession();
-                    } else {
-                        custError.textContent = "Incorrect password.";
-                        custError.style.display = 'block';
-                    }
+            // Fixed Single Login Flow
+            const users = JSON.parse(localStorage.getItem('mock_users') || '{}');
+            if (users[user]) {
+                if (users[user] === pass) {
+                    showToast("Login successful. Accessing Assistant...");
+                    createSession();
                 } else {
-                    custError.textContent = "Account does not exist! Please click 'Create Account' above.";
+                    custError.textContent = "Incorrect password.";
                     custError.style.display = 'block';
-                    showToast("Account not found.", true);
                 }
+            } else {
+                custError.textContent = "Invalid Demo ID or Password.";
+                custError.style.display = 'block';
+                showToast("ID not found.", true);
             }
         });
     }
@@ -201,24 +164,6 @@ function setupAuth() {
                 firebase.analytics().logEvent('sos_alert', { location: 'main_stadium' });
             }
         });
-    }
-}
-
-function setAuthMode(isRegister) {
-    isRegisterMode = isRegister;
-    custError.style.display = 'none';
-    if (isRegisterMode) {
-        authTitle.innerHTML = 'Create Account<span class="pulse-dot"></span>';
-        authSubtitle.textContent = 'Register a new Attendee pass.';
-        authBtn.textContent = 'Register';
-        viewRegister.style.color = '#60a5fa'; viewRegister.style.textDecoration = 'underline'; viewRegister.style.fontWeight = '600';
-        viewLogin.style.color = '#94a3b8'; viewLogin.style.textDecoration = 'none'; viewLogin.style.fontWeight = '400';
-    } else {
-        authTitle.innerHTML = 'Welcome Attendee<span class="pulse-dot"></span>';
-        authSubtitle.textContent = 'Login to unlock the Assistant.';
-        authBtn.textContent = 'Access Assistant';
-        viewLogin.style.color = '#60a5fa'; viewLogin.style.textDecoration = 'underline'; viewLogin.style.fontWeight = '600';
-        viewRegister.style.color = '#94a3b8'; viewRegister.style.textDecoration = 'none'; viewRegister.style.fontWeight = '400';
     }
 }
 
