@@ -144,22 +144,24 @@ function setupAuth() {
 
             if (isRegisterMode) {
                 // Register Flow
-                const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+                const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
                 if (!passRegex.test(pass)) {
-                    custError.textContent = "Pass must be 8+ chars, 1 Uppercase, 1 Lowercase, 1 Number, 1 Special Char.";
+                    custError.textContent = "Password must be at least 6 chars and include 1 Uppercase, 1 Lowercase, and 1 Number.";
                     custError.style.display = 'block';
+                    showToast("Weak Password. Try e.g. Secure123", true);
                     return;
                 }
                 const users = JSON.parse(localStorage.getItem('mock_users') || '{}');
                 if (users[user]) {
-                    custError.textContent = "Username already exists.";
+                    custError.textContent = "Account already exists! Click 'Sign In'.";
                     custError.style.display = 'block';
+                    showToast("Account already exists!", true);
                     return;
                 }
                 users[user] = pass;
                 localStorage.setItem('mock_users', JSON.stringify(users));
                 showToast("Account successfully created! Welcome aboard.");
-                createSession();
+                setTimeout(() => { createSession(); }, 1000);
             } else {
                 // Login Flow
                 const users = JSON.parse(localStorage.getItem('mock_users') || '{}');
