@@ -1,181 +1,39 @@
-# QueueLess AI 🏟️
+# QueueLess AI
 
-> **Skip the Queue. Enjoy the Game.**
+## Problem Statement
+Large stadiums and physical events often suffer from severe bottlenecks at entry points, food stalls, and washrooms. Attendees struggle to find the most efficient routes, leading to long wait times, frustration, and a diminished event experience.
 
-A smart, lightweight AI assistant that helps fans navigate large stadiums efficiently — avoiding crowds, reducing waiting times, and finding the nearest facilities in real time.
+## Solution Overview
+QueueLess AI is a lightweight, single-page web application designed to serve as a smart assistant for stadium attendees. It acts as a real-time decision engine that guides users to the least crowded gates, fastest food stalls, and freest washrooms, minimizing wait times and improving crowd flow.
 
----
+## Features
+- **Smart AI Chat Assistant**: Users can converse naturally using keywords to find optimal pathways.
+- **Intelligent Decision Engine**: Calculates the "best" recommended option based on shortest wait times and lowest crowd density, providing clear reasoning.
+- **Live Crowd Dashboard**: A visual representation of crowd levels and wait times across different zones.
+- **Google Maps Integration**: Displays a live map of the venue to aid navigation.
 
-## 🧩 Problem Statement
+## Tech Stack
+- **HTML5**: Semantic web structure.
+- **CSS3**: Independent, modular CSS with flexbox and grid layouts. No external frameworks. It features a modern dark aesthetic, using vibrant blur and glassmorphism.
+- **JavaScript (ES6+)**: Vanilla JS for logic, DOM manipulation, and data handling. No external libraries.
 
-Large stadiums hosting 50,000–130,000+ fans face massive operational challenges:
+## Decision Logic Explanation
+The intelligent decision-making is powered by evaluating JSON/Object data arrays summarizing current stadium states.
+- `getBestGate()` uses `Array.reduce()` to find the gate with the lowest score (a computed metric of total crowd + wait time).
+- `getBestFood()` uses `Array.reduce()` to find the food stall with the minimum wait minutes.
+- `getBestWashroom()` evaluates queue lengths returning the option with the shortest list of waiting people.
 
-- **Long entry queues** at popular gates
-- **Crowded food stalls** causing fans to miss live action
-- **Difficulty locating** washrooms and facilities
-- **No real-time guidance** for fans inside the venue
+All AI responses clearly combine the recommendation with the reasoning variables (e.g. queue length, wait times) to ensure transparency. The responses are dynamic and clearly state exactly *why* the option was chosen.
 
-These problems result in poor fan experiences, safety risks, and missed moments.
+## Security Practices
+- **Text Injection Prevention**: Strict usage of `textContent` instead of `innerHTML` to prevent Cross-site Scripting (XSS).
+- **Sanitization**: Using `.trim()` and `.toLowerCase()` to clean raw input natively prior to processing.
+- **No External Scripts**: Aside from standard google fonts, zero external javascript libraries are fetched, reducing attack surface vectors.
 
----
+## Google Services Used
+- **Google Maps Embed API**: An embedded interactive venue map (Narendra Modi Stadium used as a demo example) to provide visual context immediately to users within the app.
 
-## 💡 Solution Overview
-
-**QueueLess AI** is a single-page web application that acts as a smart venue assistant. It uses on-device decision logic (no server required) to:
-
-1. Analyze simulated live crowd data across gates, food stalls, and washrooms
-2. Apply a **decision engine** that always surfaces the **best option**
-3. Communicate recommendations through a **conversational chatbot UI**
-4. Display a **live-updating dashboard** for at-a-glance situational awareness
-
----
-
-## ✨ Features
-
-| Feature | Description |
-|---|---|
-| 🤖 **AI Chat Assistant** | Conversational interface that understands natural language queries |
-| 🚪 **Gate Recommendations** | Identifies the least crowded entry gate with estimated wait time |
-| 🍔 **Food Stall Guidance** | Ranks food stalls by wait time and surfaces the fastest option |
-| 🚻 **Washroom Finder** | Finds the nearest free washroom |
-| 📊 **Live Crowd Dashboard** | Color-coded indicators (🟢 Low / 🟡 Medium / 🔴 High) for all facilities |
-| 🗺️ **Google Maps Integration** | Embedded live venue map (Narendra Modi Stadium, Ahmedabad) |
-| 🔄 **Auto-Refresh Simulation** | Data updates every 30 seconds to simulate real-time changes |
-| 📱 **Mobile Responsive** | Fully responsive design for all screen sizes |
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Markup | HTML5 (semantic) |
-| Styling | Vanilla CSS3 (custom properties, grid, flexbox, animations) |
-| Logic | Vanilla JavaScript (ES6+, no frameworks) |
-| Fonts | Google Fonts (Inter, Space Grotesk) |
-| Maps | Google Maps Embed API (iframe) |
-| Deployment | Google Cloud Run |
-
-**Total repository size: < 1 MB**
-**Zero external JS dependencies**
-
----
-
-## 🧠 Decision Logic Explanation
-
-The core of QueueLess AI is the **Decision Engine** (`app.js → DecisionEngine`):
-
-### Gate Selection
-```
-Sort gates by: crowd score (LOW=1, MEDIUM=2, HIGH=3) → entrance time
-Return: gate with lowest score + fastest entry
-```
-
-### Food Stall Selection
-```
-Sort food stalls by: waitMinutes (ascending)
-Return: stall with minimum wait time
-```
-
-### Washroom Selection
-```
-Filter washrooms where crowdLevel === 'FREE'
-Return: first available free washroom (or least busy if all occupied)
-```
-
-### Intent Recognition
-User messages are matched against a priority-ordered list of **regex patterns**. The first match triggers the corresponding decision handler:
-```
-/gate|enter|crowd/.test(msg)      → bestGate()
-/food|eat|stall/.test(msg)        → bestFoodStall()
-/washroom|toilet/.test(msg)       → bestWashroom()
-/wait time|all/.test(msg)         → allWaitTimes()
-/dashboard|summary/.test(msg)     → dashboardSummary()
-```
-
----
-
-## 🗺️ Google Services Used
-
-| Service | Usage |
-|---|---|
-| **Google Maps Embed** | Embedded iframe showing Narendra Modi Stadium, Ahmedabad |
-| **Google Fonts** | Inter & Space Grotesk for modern typography |
-| **Google Cloud Run** | Hosting and deployment of the web application |
-
----
-
-## 📐 Assumptions (Mock Data)
-
-Since this is a demonstration project, the following data is **simulated**:
-
-- **Gates**: 3 gates with static initial crowd levels (High / Low / Medium)
-- **Food Stalls**: 5 stalls with initial wait times (2, 3, 6, 8, 10 minutes)
-- **Washrooms**: 4 washrooms with initial status (Free / Busy)
-- **Live Updates**: A `DataSimulator` module randomly mutates data every 30 seconds to simulate real IoT sensor feeds
-
-In production, these would be replaced with:
-- Real-time crowd counting APIs (camera-based or turnstile sensors)
-- POS system integrations for food stall wait times
-- Washroom occupancy sensors
-
----
-
-## 📁 Project Structure
-
-```
-QueueLess AI/
-├── index.html      # Application shell + all sections
-├── style.css       # Complete design system + responsive styles
-├── app.js          # Decision engine + chat UI + dashboard + simulator
-├── Dockerfile      # Container config for Google Cloud Run
-└── README.md       # This file
-```
-
----
-
-## 🚀 Running Locally
-
-Since this is a pure HTML/CSS/JS project, simply open `index.html` in any modern browser — no build step required.
-
-For a local HTTP server (recommended):
-```bash
-# Python
-python -m http.server 8080
-
-# Or Node.js
-npx serve .
-```
-
----
-
-## ☁️ Deployment (Google Cloud Run)
-
-The app is containerized using a lightweight **nginx** Docker image:
-
-```bash
-# Build and push
-docker build -t gcr.io/YOUR_PROJECT/queueless-ai .
-docker push gcr.io/YOUR_PROJECT/queueless-ai
-
-# Deploy
-gcloud run deploy queueless-ai \
-  --image gcr.io/YOUR_PROJECT/queueless-ai \
-  --platform managed \
-  --region us-central1 \
-  --allow-unauthenticated
-```
-
----
-
-## 👨‍💻 Author
-
-**Smit Parmar**
-- GitHub: [@Smart123-12](https://github.com/Smart123-12)
-- Google Account: smitparmar280@gmail.com
-
----
-
-## 📄 License
-
-MIT License — Free to use, modify, and distribute.
+## Assumptions
+- Real-time crowd data (such as gate crowd level and wait time) is aggregated frequently by a backend server and fed via API to this client component. The current version safely simulates this payload. 
+- General keyword matching provides enough coverage for quick questions while attending a chaotic event.
+- Total application scope requires extreme optimization, thus keeping assets well under 1 MB and using zero external framework dependencies while still looking premium and functioning optimally.
