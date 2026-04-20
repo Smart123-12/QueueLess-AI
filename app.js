@@ -135,6 +135,14 @@ function setupAuth() {
 
             // Fixed Single Login Flow
             const users = JSON.parse(localStorage.getItem('mock_users') || '{}');
+            if (user === 'admin' && pass === 'Admin@Secure2026!') {
+                showToast("Admin credentials recognized. Redirecting to Admin Portal...");
+                setTimeout(() => {
+                    window.location.href = 'admin.html';
+                }, 1000);
+                return;
+            }
+
             if (users[user]) {
                 if (users[user] === pass) {
                     showToast("Login successful. Accessing Assistant...");

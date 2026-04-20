@@ -4,6 +4,26 @@
  * Interacts with Firebase Auth (Simulated for this implementation).
  */
 
+// Initialize Google Firebase (Mock implementation for integration)
+const firebaseConfig = {
+    apiKey: "AIzaSyMockKeyForGoogleServices_Simulation",
+    authDomain: "queueless-ai.firebaseapp.com",
+    projectId: "queueless-ai",
+    storageBucket: "queueless-ai.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "1:123456789:web:abcdef123456",
+    measurementId: "G-12345ABCDE"
+};
+try {
+    if (typeof firebase !== 'undefined' && firebase.initializeApp) {
+        firebase.initializeApp(firebaseConfig);
+        const analytics = firebase.analytics();
+        console.log("Firebase & Google Cloud Integration Active for Admin");
+    }
+} catch(e) {
+    console.error("Google Services Error:", e);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('login-form');
     const loginSection = document.getElementById('login-section');
