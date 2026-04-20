@@ -22,9 +22,14 @@
 </head>
 <body>
     <header style="position: relative; z-index: 20;">
-        <a href="admin.html" aria-label="Admin Portal" style="position: absolute; right: 1.5rem; top: 1.5rem; color: #94a3b8; font-size: 0.85rem; text-decoration: none; border: 1px solid #334155; padding: 0.3rem 0.6rem; border-radius: 6px; background: rgba(15, 23, 42, 0.5); transition: all 0.2s;">
-            🔒 Admin
-        </a>
+        <div style="position: absolute; right: 1.5rem; top: 1.5rem; display: flex; gap: 0.8rem;">
+            <a href="#" id="customer-logout-btn" style="display: none; color: #fca5a5; font-size: 0.85rem; text-decoration: none; border: 1px solid #7f1d1d; padding: 0.3rem 0.6rem; border-radius: 6px; background: rgba(239, 68, 68, 0.1); transition: all 0.2s;">
+                Sign Out
+            </a>
+            <a href="admin.html" aria-label="Admin Portal" style="color: #94a3b8; font-size: 0.85rem; text-decoration: none; border: 1px solid #334155; padding: 0.3rem 0.6rem; border-radius: 6px; background: rgba(15, 23, 42, 0.5); transition: all 0.2s;">
+                🔒 Admin
+            </a>
+        </div>
         <div class="logo">
             <h1>QueueLess AI</h1>
             <p>Your Smart Stadium Assistant</p>
@@ -34,26 +39,31 @@
     <!-- Customer Login Overlay -->
     <div id="customer-login-section" class="setup-overlay">
         <section class="login-card premium-glass">
-            <div class="login-header">
-                <h2>Welcome Attendee<span class="pulse-dot"></span></h2>
-                <p>Unlock the QueueLess AI Assistant.</p>
-                <div style="background: rgba(15,23,42,0.8); padding: 0.8rem; border-radius: 8px; border: 1px dashed #64748b; font-size: 0.85rem; color: #94a3b8; margin-bottom: 1.5rem; text-align: left;">
-                    <strong>ℹ️ Demo Credentials:</strong><br>
+            <div class="login-header" id="auth-mode-header">
+                <h2 id="auth-title">Welcome Attendee<span class="pulse-dot"></span></h2>
+                <p id="auth-subtitle">Login to unlock the Assistant.</p>
+                <div style="background: rgba(15,23,42,0.8); padding: 0.8rem; border-radius: 8px; border: 1px dashed #64748b; font-size: 0.85rem; color: #94a3b8; margin-bottom: 1rem; text-align: left;">
+                    <strong>ℹ️ Demo Access:</strong><br>
                     ID: <code style="color: #60a5fa;">student</code><br>
-                    Pass: <code style="color: #60a5fa;">password</code>
+                    Pass: <code style="color: #60a5fa;">Secure@2026!</code>
+                </div>
+                <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <a href="#" id="view-login" style="color: #60a5fa; text-decoration: underline; font-weight: 600;">Sign In</a>
+                    <span style="color: #64748b;">|</span>
+                    <a href="#" id="view-register" style="color: #94a3b8; text-decoration: none;">Create Account</a>
                 </div>
             </div>
             <form id="customer-login-form" class="login-form">
                 <div class="input-group">
                     <span class="icon">🎟️</span>
-                    <input type="text" id="cust-user" placeholder="Ticket ID (student)" required aria-label="Ticket ID">
+                    <input type="text" id="cust-user" placeholder="Ticket ID (e.g. student)" required aria-label="Ticket ID">
                 </div>
                 <div class="input-group">
                     <span class="icon">🔑</span>
-                    <input type="password" id="cust-pass" placeholder="Password (password)" required aria-label="Password">
+                    <input type="password" id="cust-pass" placeholder="Password (Secure@2026!)" required aria-label="Password">
                 </div>
-                <button type="submit" class="glow-btn">Access Assistant</button>
-                <div id="cust-error" class="error-text" style="display: none;">Invalid Ticket. Try 'student' / 'password'</div>
+                <button type="submit" id="auth-btn" class="glow-btn">Access Assistant</button>
+                <div id="cust-error" class="error-text" style="display: none;">Invalid credentials</div>
             </form>
         </section>
     </div>

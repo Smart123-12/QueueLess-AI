@@ -52,9 +52,25 @@ const crowdDashboard = document.getElementById('crowd-dashboard');
 // Auth DOM
 const custLoginForm = document.getElementById('customer-login-form');
 const custLoginSection = document.getElementById('customer-login-section');
-const mainAppContent = document.getElementById('main-app-content');
-const custError = document.getElementById('cust-error');
-const sosBtn = document.getElementById('sos-btn');
+const custLogoutBtn = document.getElementById('customer-logout-btn');
+
+// View Toggles
+const viewLogin = document.getElementById('view-login');
+const viewRegister = document.getElementById('view-register');
+const authTitle = document.getElementById('auth-title');
+const authSubtitle = document.getElementById('auth-subtitle');
+const authBtn = document.getElementById('auth-btn');
+
+let isRegisterMode = false;
+// Session Expiry configuration (e.g., 30 minutes)
+const SESSION_DURATION_MS = 30 * 60 * 1000;
+
+// Setup mock DB defaults
+if (!localStorage.getItem('mock_users')) {
+    localStorage.setItem('mock_users', JSON.stringify({
+        'student': 'Secure@2026!'
+    }));
+}
 
 /**
  * Initialize the application
@@ -71,11 +87,14 @@ function init() {
 }
 
 /**
- * Handle Auth Login for Customer Role
+ * Handle Auth Login & Register for Customer Role
  */
 function setupAuth() {
-    if (sessionStorage.getItem('customer_auth') === 'true') {
-        showMainApp();
+    checkSessionExpiry();
+
+    if (viewLogin && viewRegister) {
+        viewLogin.addEventListener('click', (e) => { e.preventDefault(); setAuthMode(false); });
+        viewRegister.addEventListener('click', (e) => { e.preventDefault(); setAuthMode(true); });
     }
 
     if (custLoginForm) {
@@ -83,13 +102,45 @@ function setupAuth() {
             e.preventDefault();
             const user = document.getElementById('cust-user').value.trim();
             const pass = document.getElementById('cust-pass').value.trim();
+            custError.style.display = 'none';
 
-            if (user === 'student' && pass === 'password') {
-                sessionStorage.setItem('customer_auth', 'true');
-                showMainApp();
+            if (isRegisterMode) {
+                // Register Flow
+                const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+                if (!passRegex.test(pass)) {
+                    custError.textContent = "Pass must be 8+ chars, 1 Uppercase, 1 Lowercase, 1 Number, 1 Special Char.";
+                    custError.style.display = 'block';
+                    return;
+                }
+                const users = JSON.parse(localStorage.getItem('mock_users') || '{}');
+                if (users[user]) {
+                    custError.textContent = "Username already exists.";
+                    custError.style.display = 'block';
+                    return;
+                }
+                users[user] = pass;
+                localStorage.setItem('mock_users', JSON.stringify(users));
+                alert("Account created! Logging you in...");
+                createSession(user);
             } else {
-                custError.style.display = 'block';
+                // Login Flow
+                const users = JSON.parse(localStorage.getItem('mock_users') || '{}');
+                if (users[user] === pass) {
+                    createSession(user);
+                } else {
+                    custError.textContent = "Invalid Ticket ID or Password.";
+                    custError.style.display = 'block';
+                }
             }
+        });
+    }
+
+    if (custLogoutBtn) {
+        custLogoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            sessionStorage.removeItem('customer_auth');
+            sessionStorage.removeItem('customer_expiry');
+            location.reload();
         });
     }
 
@@ -103,10 +154,51 @@ function setupAuth() {
     }
 }
 
+function setAuthMode(isRegister) {
+    isRegisterMode = isRegister;
+    custError.style.display = 'none';
+    if (isRegisterMode) {
+        authTitle.innerHTML = 'Create Account<span class="pulse-dot"></span>';
+        authSubtitle.textContent = 'Register a new Attendee pass.';
+        authBtn.textContent = 'Register';
+        viewRegister.style.color = '#60a5fa'; viewRegister.style.textDecoration = 'underline'; viewRegister.style.fontWeight = '600';
+        viewLogin.style.color = '#94a3b8'; viewLogin.style.textDecoration = 'none'; viewLogin.style.fontWeight = '400';
+    } else {
+        authTitle.innerHTML = 'Welcome Attendee<span class="pulse-dot"></span>';
+        authSubtitle.textContent = 'Login to unlock the Assistant.';
+        authBtn.textContent = 'Access Assistant';
+        viewLogin.style.color = '#60a5fa'; viewLogin.style.textDecoration = 'underline'; viewLogin.style.fontWeight = '600';
+        viewRegister.style.color = '#94a3b8'; viewRegister.style.textDecoration = 'none'; viewRegister.style.fontWeight = '400';
+    }
+}
+
+function createSession(user) {
+    sessionStorage.setItem('customer_auth', 'true');
+    sessionStorage.setItem('customer_expiry', Date.now() + SESSION_DURATION_MS);
+    showMainApp();
+}
+
+function checkSessionExpiry() {
+    const authList = sessionStorage.getItem('customer_auth');
+    const expiry = sessionStorage.getItem('customer_expiry');
+    if (authList === 'true' && expiry) {
+        if (Date.now() > parseInt(expiry, 10)) {
+            // Session expired
+            sessionStorage.removeItem('customer_auth');
+            sessionStorage.removeItem('customer_expiry');
+            alert("Your session has expired. Please log in again.");
+            location.reload();
+        } else {
+            showMainApp();
+        }
+    }
+}
+
 function showMainApp() {
     if(custLoginSection) custLoginSection.style.display = 'none';
     if(mainAppContent) mainAppContent.style.display = 'grid'; // because main container uses grid
     if(sosBtn) sosBtn.style.display = 'block';
+    if(custLogoutBtn) custLogoutBtn.style.display = 'inline-block';
 }
 
 /**
