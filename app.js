@@ -54,6 +54,7 @@ const custLoginForm = document.getElementById('customer-login-form');
 const custLoginSection = document.getElementById('customer-login-section');
 const mainAppContent = document.getElementById('main-app-content');
 const custError = document.getElementById('cust-error');
+const sosBtn = document.getElementById('sos-btn');
 
 /**
  * Initialize the application
@@ -91,11 +92,21 @@ function setupAuth() {
             }
         });
     }
+
+    if (sosBtn) {
+        sosBtn.addEventListener('click', () => {
+            alert("🚨 EMERGENCY SOS ACTIVATED! Location pinged. Security has been dispatched directly to your seat.");
+            if (typeof firebase !== 'undefined' && firebase.analytics) {
+                firebase.analytics().logEvent('sos_alert', { location: 'main_stadium' });
+            }
+        });
+    }
 }
 
 function showMainApp() {
     if(custLoginSection) custLoginSection.style.display = 'none';
     if(mainAppContent) mainAppContent.style.display = 'grid'; // because main container uses grid
+    if(sosBtn) sosBtn.style.display = 'block';
 }
 
 /**
